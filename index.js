@@ -35,21 +35,16 @@ async function run(){
             const result = await offerCollection.insertOne(addService);
             res.json(result);
         });
-        // //USE DATA BY KEYS
-        // app.post('/offers/byKeys',(req,res)=>{
-        //     console.log(req.body);
-        //     res.send('hitting the post')
+     
 
-        // })
-
-        //GET OFFERS API
+        //GET ORDERS API 
         app.get('/orders', async(req,res)=>{
             const cursor = orderCollection.find({});
             const orders = await cursor.toArray();
             res.send(orders);
         });
 
-        //ADD ORDER API
+        //ADD ORDERS API
         app.post('/orders', async(req,res) =>{
             const order =req.body;
             
@@ -57,7 +52,7 @@ async function run(){
             res.json(result);
         });
 
-        //DELETE API
+        //DELETE AN ORDER API
         app.delete('/orders/:id', async(req, res) => {
             const id = req.params.id;
             const query = {_id:ObjectId(id)};
@@ -65,12 +60,24 @@ async function run(){
             res.json(result);
         });
 
-        // //UPDATE STATUS
-        // app.put('/orders/:id', async(req, res) => {
-        //     const id = req.params.id;
-        //     console.log('show id',id)
-        //     res.send('hitting put')
-        // });
+        //UPDATE STATUS
+        app.put('/orders/:id', async(req, res) => {
+            const id = req.params.id;
+            const updateStatus = req.body;
+            const filter = {_id: ObjectId(id)};
+            const options = {upsert: true};
+            console.log(updateStatus[0]?.status)
+
+            const updateDoc = {
+                $set: {
+                    status: updateStatus[0]?.status
+                },
+            };
+            console.log(updateDoc)
+            const result = await orderCollection.updateOne(filter,updateDoc, options)
+            console.log('show id',id)
+            res.json(result);
+        });
 
 
 
@@ -88,7 +95,5 @@ app.get('/', (req, res) =>{
 
 app.listen(port, ()=>{
     console.log('hey i am running')
-})
+});
 
-//ThemeParkUser
-//rDSNWmSbo0N8iW0m
