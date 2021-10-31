@@ -1,6 +1,7 @@
 const express = require('express');
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
+const ObjectId = require('mongodb').ObjectId;
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
@@ -8,6 +9,7 @@ const port = process.env.PORT || 5000;
 //middleware
 app.use(cors());
 app.use(express.json())
+console.log('hi')
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ebhzh.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -18,11 +20,11 @@ async function run(){
         await client.connect();
         const database = client.db('theme_park');
         const offerCollection = database.collection('offers');
+        const orderCollection = database.collection('order')
 
         //GET OFFERS API
         app.get('/offers', async(req,res)=>{
             const cursor = offerCollection.find({});
-
             const offers = await cursor.toArray();
             res.send(offers);
         });
@@ -32,7 +34,45 @@ async function run(){
             const addService = req.body;
             const result = await offerCollection.insertOne(addService);
             res.json(result);
-        })
+        });
+        // //USE DATA BY KEYS
+        // app.post('/offers/byKeys',(req,res)=>{
+        //     console.log(req.body);
+        //     res.send('hitting the post')
+
+        // })
+
+        //GET OFFERS API
+        app.get('/orders', async(req,res)=>{
+            const cursor = orderCollection.find({});
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
+
+        //ADD ORDER API
+        app.post('/orders', async(req,res) =>{
+            const order =req.body;
+            
+            const result = await orderCollection.insertOne(order);
+            res.json(result);
+        });
+
+        //DELETE API
+        app.delete('/orders/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id:ObjectId(id)};
+            const result = await orderCollection.deleteOne(query);
+            res.json(result);
+        });
+
+        // //UPDATE STATUS
+        // app.put('/orders/:id', async(req, res) => {
+        //     const id = req.params.id;
+        //     console.log('show id',id)
+        //     res.send('hitting put')
+        // });
+
+
 
     }
     finally{
